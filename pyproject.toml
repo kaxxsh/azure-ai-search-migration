@@ -1,0 +1,14 @@
+[project]
+name = "SPC-AI-SEARCH-MIGRATION"
+version = "1.0.0"
+description = "A tool to migrate data from Azure AI Search source to destination."
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "aiohttp>=3.9.0",
+    "azure-core>=1.29.0",
+    "azure-data-tables>=12.4.0",
+    "azure-search-documents>=11.4.0",
+    "python-dotenv>=1.0.0",
+    "tqdm>=4.66.0",
+]

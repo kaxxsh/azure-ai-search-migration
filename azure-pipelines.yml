@@ -1,0 +1,47 @@
+trigger:
+  - main
+
+resources:
+  - repo: self
+
+variables:
+  - name : variable_group
+    value : spcAiSearchBackup
+  - group : ${{ variables.variable_group }}
+  - name : dockerFilePath
+    value : '$(Build.SourcesDirectory)/Dockerfile'
+  - name : tag
+    value : $(Build.BuildId)
+  - name : DOCKER_BUILDKIT
+    value : 1
+  - name : vmImageName
+    value : 'ubuntu-latest'
+
+stages:
+  - stage: Build_and_Deploy
+    displayName: Build, push stage and deploy
+    jobs:
+      - job: Build
+        variables:
+          - group : ${{ variables.variable_group }}
+        displayName: Build
+        pool:
+          vmImage: $(vmImageName)
+        steps:
+          # Docker Login
+          - task: Docker@2
+            inputs:
+              containerRegistry: '$(dockerRegistryServiceConnection)'
+              command: 'login'
+          # Docker Build and Push
+          - script: |
+              docker buildx create --driver=docker-container --name=container-builder
+              docker build \
+              --cache-to type=registry,ref=$(containerRegistry)/$(imageRepository):cache,mode=max \
+              --cache-from type=registry,ref=$(containerRegistry)/$(imageRepository):cache \
+              --builder container-builder \
+              -t $(containerRegistry)/$(imageRepository):$(tag) \
+              -t $(containerRegistry)/$(imageRepository):latest \
+              --push \
+              ./
+            displayName: 'Build and push docker image'
